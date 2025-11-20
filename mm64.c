@@ -554,7 +554,7 @@ int print_pgtbl(struct pcb_t *caller, addr_t start, addr_t end)
   int i;
   for (i = 0; i < PAGING64_MAX_PGN; i++) {
     if (caller->krnl->mm->pgd[i] != 0) {
-       printf("%08ld: %08lx\n", (long)(i * PAGING64_PAGESZ), (unsigned long)caller->krnl->mm->pgd[i]);
+       printf("%08ld: %08x\n", i * PAGING64_PAGESZ, caller->krnl->mm->pgd[i]);
     }
   }
 
