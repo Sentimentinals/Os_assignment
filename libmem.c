@@ -431,7 +431,8 @@ int free_pcb_memph(struct pcb_t *caller)
   int pagenum, fpn;
   uint32_t pte;
 
-  for (pagenum = 0; pagenum < PAGING_MAX_PGN; pagenum++)
+  /* Use PAGING64_MAX_PGN to match the allocated pgd array size */
+  for (pagenum = 0; pagenum < PAGING64_MAX_PGN; pagenum++)
   {
     pte = caller->krnl->mm->pgd[pagenum];
 
@@ -443,6 +444,10 @@ int free_pcb_memph(struct pcb_t *caller)
     else
     {
       fpn = PAGING_SWP(pte);
+
+      if (fpn == -1)
+        continue;
+
       MEMPHY_put_freefp(caller->krnl->active_mswp, fpn);
     }
   }
