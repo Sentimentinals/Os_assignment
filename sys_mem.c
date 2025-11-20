@@ -71,27 +71,50 @@ int __sys_memmap(struct krnl_t *krnl, uint32_t pid, struct sc_regs* regs)
        }
    }
 
+   printf("[DEBUG] __sys_memmap called: pid=%d, memop=%d\n", pid, memop);
+   
    if (caller == NULL) {
+       printf("[ERROR] Process with PID %d not found in any queue!\n", pid);
        return -1; /* Process not found */
    }
+   
+   printf("[DEBUG] Found caller: pid=%d\n", caller->pid);
+   
+   /* Safety check: ensure caller->krnl is valid */
+   if (caller->krnl == NULL) {
+       printf("[ERROR] caller->krnl is NULL for pid=%d\n", pid);
+       return -1;
+   }
+   
+   printf("[DEBUG] caller->krnl is valid\n");
 	
    switch (memop) {
    case SYSMEM_MAP_OP:
+            printf("[DEBUG] SYSMEM_MAP_OP: addr=%lu, pgnum=%lu\n", regs->a2, regs->a3);
             /* Reserved process case*/
 			vmap_pgd_memset(caller, regs->a2, regs->a3);
+            printf("[DEBUG] SYSMEM_MAP_OP completed\n");
             break;
    case SYSMEM_INC_OP:
+            printf("[DEBUG] SYSMEM_INC_OP: vmaid=%lu, size=%lu\n", regs->a2, regs->a3);
             inc_vma_limit(caller, regs->a2, regs->a3);
+            printf("[DEBUG] SYSMEM_INC_OP completed\n");
             break;
    case SYSMEM_SWP_OP:
+            printf("[DEBUG] SYSMEM_SWP_OP\n");
             __mm_swap_page(caller, regs->a2, regs->a3);
+            printf("[DEBUG] SYSMEM_SWP_OP completed\n");
             break;
    case SYSMEM_IO_READ:
+            printf("[DEBUG] SYSMEM_IO_READ: addr=%lu\n", regs->a2);
             MEMPHY_read(caller->krnl->mram, regs->a2, &value);
             regs->a3 = value;
+            printf("[DEBUG] SYSMEM_IO_READ completed, value=%d\n", value);
             break;
    case SYSMEM_IO_WRITE:
+            printf("[DEBUG] SYSMEM_IO_WRITE: addr=%lu, value=%lu\n", regs->a2, regs->a3);
             MEMPHY_write(caller->krnl->mram, regs->a2, regs->a3);
+            printf("[DEBUG] SYSMEM_IO_WRITE completed\n");
             break;
    default:
             printf("Memop code: %d\n", memop);
