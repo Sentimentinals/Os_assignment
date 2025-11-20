@@ -72,13 +72,11 @@ int __sys_memmap(struct krnl_t *krnl, uint32_t pid, struct sc_regs* regs)
    }
    
    if (caller == NULL) {
-       printf("[ERROR] Process with PID %d not found in any queue!\n", pid);
        return -1; /* Process not found */
    }
    
    /* Safety check: ensure caller->krnl is valid */
    if (caller->krnl == NULL) {
-       printf("[ERROR] caller->krnl is NULL for pid=%d\n", pid);
        return -1;
    }
 	
