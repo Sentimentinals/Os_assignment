@@ -1,0 +1,10 @@
+# Check xem libmem.c có dùng PAGING64_MAX_PGN chưa
+grep -n "PAGING64_MAX_PGN" ~/os_lamiaatrium/src/libmem.c
+
+# Check xem mm64.c có dùng PAGING64_MAX_PGN chưa  
+grep -n "PAGING64_MAX_PGN" ~/os_lamiaatrium/src/mm64.c
+
+# Nếu KHÔNG thấy output thì file chưa update!
+
+# Check xem còn PAGING_MAX_PGN nào trong .c files không
+grep -r "PAGING_MAX_PGN" ~/os_lamiaatrium/src/*.c
