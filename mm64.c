@@ -399,10 +399,10 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
 
   // Allocate page global directory
   // Use PAGING64_MAX_PGN for 64-bit mode (much smaller, realistic size)
-  mm->pgd = malloc(PAGING64_MAX_PGN * sizeof(uint32_t));
+  mm->pgd = malloc(PAGING64_MAX_PGN * sizeof(addr_t));
   if (mm->pgd == NULL) {
     printf("[ERROR] Failed to allocate PGD: size=%lu bytes\n", 
-           PAGING64_MAX_PGN * sizeof(uint32_t));
+           PAGING64_MAX_PGN * sizeof(addr_t));
     free(vma0);
     return -1;
   }
@@ -550,6 +550,11 @@ int print_pgtbl(struct pcb_t *caller, addr_t start, addr_t end)
   addr_t pt=0;
 
   get_pd_from_address(start, &pgd, &p4d, &pud, &pmd, &pt);
+
+  printf("print_pgtbl:\n");
+  printf(" PDG=%lx P4g=%lx PUD=%lx PMD=%lx\n", 
+         (unsigned long)pgd, (unsigned long)p4d, 
+         (unsigned long)pud, (unsigned long)pmd);
 
   int i;
   for (i = 0; i < PAGING64_MAX_PGN; i++) {
