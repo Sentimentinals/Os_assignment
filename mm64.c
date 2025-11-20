@@ -407,9 +407,30 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
     return -1;
   }
   
-  // Initialize all PGD entries to 0
+  // Allocate other page table levels for 64-bit paging
+  mm->p4d = malloc(PAGING64_MAX_PGN * sizeof(addr_t));
+  mm->pud = malloc(PAGING64_MAX_PGN * sizeof(addr_t));
+  mm->pmd = malloc(PAGING64_MAX_PGN * sizeof(addr_t));
+  mm->pt = malloc(PAGING64_MAX_PGN * sizeof(addr_t));
+  
+  if (mm->p4d == NULL || mm->pud == NULL || mm->pmd == NULL || mm->pt == NULL) {
+    printf("[ERROR] Failed to allocate page tables\n");
+    free(mm->pgd);
+    free(mm->p4d);
+    free(mm->pud);
+    free(mm->pmd);
+    free(mm->pt);
+    free(vma0);
+    return -1;
+  }
+  
+  // Initialize all page table entries to 0
   for (int i = 0; i < PAGING64_MAX_PGN; i++) {
     mm->pgd[i] = 0;
+    mm->p4d[i] = 0;
+    mm->pud[i] = 0;
+    mm->pmd[i] = 0;
+    mm->pt[i] = 0;
   }
 
   /* TODO init page table directory */
@@ -541,21 +562,16 @@ int print_pgtbl(struct pcb_t *caller, addr_t start, addr_t end)
 {
 //  addr_t pgn_start;//, pgn_end;
 //  addr_t pgit;
-//  struct krnl_t *krnl = caller->krnl;
 
-  addr_t pgd=0;
-  addr_t p4d=0;
-  addr_t pud=0;
-  addr_t pmd=0;
-  addr_t pt=0;
-
-  get_pd_from_address(start, &pgd, &p4d, &pud, &pmd, &pt);
-
+  /* Print addresses of page table structures from mm_struct */
   printf("print_pgtbl:\n");
   printf(" PDG=%lx P4g=%lx PUD=%lx PMD=%lx\n", 
-         (unsigned long)pgd, (unsigned long)p4d, 
-         (unsigned long)pud, (unsigned long)pmd);
+         (unsigned long)caller->krnl->mm->pgd,
+         (unsigned long)caller->krnl->mm->p4d, 
+         (unsigned long)caller->krnl->mm->pud,
+         (unsigned long)caller->krnl->mm->pmd);
 
+  /* Optionally print non-zero PGD entries */
   int i;
   for (i = 0; i < PAGING64_MAX_PGN; i++) {
     if (caller->krnl->mm->pgd[i] != 0) {
