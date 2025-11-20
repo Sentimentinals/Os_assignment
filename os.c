@@ -112,6 +112,15 @@ static void * ld_routine(void * args) {
 #endif
 	int i = 0;
 	printf("ld_routine\n");
+	
+#ifdef MM_PAGING
+	/* Initialize kernel structure ONCE before loading processes */
+	os.mm = malloc(sizeof(struct mm_struct));
+	os.mram = mram;
+	os.mswp = mswp;
+	os.active_mswp = active_mswp;
+#endif
+
 	while (i < num_processes) {
 		struct pcb_t * proc = load(ld_processes.path[i]);
 		proc->krnl = &os;
@@ -123,11 +132,10 @@ static void * ld_routine(void * args) {
 			next_slot(timer_id);
 		}
 #ifdef MM_PAGING
-		os.mm = malloc(sizeof(struct mm_struct));
-		init_mm(os.mm, proc);
-		os.mram = mram;
-		os.mswp = mswp;
-		os.active_mswp = active_mswp;
+		/* Initialize mm for first process only */
+		if (i == 0) {
+			init_mm(os.mm, proc);
+		}
 #endif
 		printf("\tLoaded a process at %s, PID: %d PRIO: %ld\n",
 			ld_processes.path[i], proc->pid, ld_processes.prio[i]);
